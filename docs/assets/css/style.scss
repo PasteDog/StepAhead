@@ -1,0 +1,103 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+// Dark mode on top of the Cayman theme: matches the Unreal Editor screenshots.
+
+$bg: #121418;
+$surface: #1a1d23;
+$border: #2e333b;
+$text: #c9ced6;
+$text-strong: #eef1f5;
+$muted: #8b94a1;
+$heading: #4fcf9f;
+$link: #6cb6ff;
+$code: #e3b884;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: $bg;
+  color: $text;
+}
+
+a {
+  color: $link;
+}
+
+.page-header {
+  background-color: #0f2a24;
+  background-image: linear-gradient(120deg, #13263d, #0f3a2e);
+}
+
+.main-content {
+  strong {
+    color: $text-strong;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: $heading;
+  }
+
+  code {
+    color: $code;
+    background-color: $surface;
+  }
+
+  pre {
+    color: $text;
+    background-color: $surface;
+    border-color: $border;
+  }
+
+  pre > code {
+    color: $text;
+  }
+
+  kbd {
+    color: $text-strong;
+    background-color: $surface;
+    border-color: $border;
+    border-bottom-color: $border;
+    box-shadow: inset 0 -1px 0 $border;
+  }
+
+  table th,
+  table td {
+    border-color: $border;
+  }
+
+  table th {
+    color: $text-strong;
+    background-color: $surface;
+  }
+
+  table tr:nth-child(even) td {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+
+  blockquote {
+    color: $muted;
+    border-left-color: $border;
+  }
+
+  hr {
+    background-color: $border;
+  }
+
+  img {
+    border: 1px solid $border;
+    border-radius: 4px;
+  }
+}
+
+.site-footer {
+  border-top-color: $border;
+}
+
+.site-footer-credits {
+  color: $muted;
+}
