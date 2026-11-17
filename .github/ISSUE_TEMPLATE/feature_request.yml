@@ -1,0 +1,22 @@
+name: Feature request
+description: An idea to make StepAhead better.
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The situation or problem, e.g. "my character climbs ladders and ...".
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+      description: How you imagine it working.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What do you do today?
+      description: Any workaround you use now.

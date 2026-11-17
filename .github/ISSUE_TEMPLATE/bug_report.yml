@@ -1,0 +1,80 @@
+name: Bug report
+description: Something in StepAhead doesn't work as described in the guide.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! The [Troubleshooting](https://pastedog.github.io/StepAhead/#troubleshooting) section covers the most common setup problems, so a quick look there may solve it.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The smallest setup that shows the problem (level geometry, animation, settings).
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: engine-version
+    attributes:
+      label: Engine version
+      options:
+        - "5.4"
+        - "5.8"
+        - Other (say which below)
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Edit → Plugins → StepAhead shows it.
+      placeholder: "1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: setup
+    attributes:
+      label: Where is the foot placement run?
+      options:
+        - AnimBP node (Predictive Foot Placement)
+        - Control Rig unit
+        - Blueprint (Update Predictive Foot Placement)
+        - Not relevant (bake / editor tools)
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Bake (StepAhead panel / bake on import)
+        - Foot placement in game
+        - Tracing / performance
+        - Reachability / terrain
+        - Debug tools
+        - Crash
+        - Other
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: Lines from the Output Log, especially the `LogStepAhead` category, or the crash call stack.
+      render: text
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or video
+      description: A short clip helps a lot, ideally with `a.StepAhead.Debug.All 1` turned on.

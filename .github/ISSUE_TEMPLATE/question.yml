@@ -1,0 +1,29 @@
+name: Question / setup help
+description: Help setting StepAhead up for your character.
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The [User Guide](https://pastedog.github.io/StepAhead/) covers setup step by step, and [Troubleshooting](https://pastedog.github.io/StepAhead/#troubleshooting) covers the most common problems.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Your setup
+      description: |
+        - engine version;
+        - skeleton (UE5 mannequin, UE4 mannequin, custom);
+        - AnimBP node or Control Rig;
+        - the leg IK you use.
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots
+      description: For example the Next Step Predictor component's details, or your AnimGraph.
