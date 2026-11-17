@@ -169,7 +169,7 @@ It returns a height and tilt offset. **Clamp Foot Offset**, **Weight Foot Offset
 | Trace Settings → Trace Up / Trace Down | 50 / 75 cm | How far above and below each prediction the trace runs. |
 | Trace LODs | 3 entries | How to trace at each mesh LOD (see below). |
 | Tracing Enabled | on | Off blends the feet back to the animation. Change it at runtime with **Set Tracing Enabled**. |
-| Only When Rendered | on | Only trace while the mesh was rendered in the last 0.2 s. |
+| Only When Rendered | on | Only trace while the mesh was rendered in the last 0.2 s (3 frames at low frame rates). |
 | Facing Check | on, 15° / 10° | Stops using the predictions while the capsule is more than **Max Angle** off the facing the Character Movement turns it to, until it is within **Resume Angle**. **Response**: **Hold Previous Step** (swinging feet blend to the animation height) or **Disable Tracing**. |
 | Trace LOD Override | -1 | Always use this Trace LODs entry; -1 lets the mesh LOD decide. |
 | Tracing Blend In / Out Time | 0.25 s | How fast the feet blend in and out when tracing turns on or off. |
