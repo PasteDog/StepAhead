@@ -53,6 +53,10 @@ These steps use the UE5 mannequin (`SKM_Manny` / `SKM_Quinn`, feet `foot_l` / `f
    - **Foot Bone** `foot_r`, **Target Bone** `ik_foot_r`.
 
    Optionally set **Pelvis Bone** to `pelvis`.
+
+   ![The Add Component menu with Next Step Predictor under StepAhead](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-add.jpg)
+
+   ![The Feet list with foot_l / ik_foot_l and foot_r / ik_foot_r](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-feet-details.jpg)
 3. **Place the feet.** In the AnimBP's AnimGraph, add **Predictive Foot Placement** after your locomotion pose. Follow it with your leg IK (for example **Two Bone IK** or **Leg IK**) that pulls each foot to its `ik_foot_*` bone.
 4. **Test.** Play, and walk up stairs and slopes. Type `a.StepAhead.Debug.All 1` in the console to see what is traced.
 
@@ -76,6 +80,10 @@ To bake new animations automatically from then on, click **Save to Project Setti
 | Plant Settings | How plants are detected (see below). |
 | Planted Curve Name / Step Progress Curve Name | The curve names. None: `Planted_<foot>` / `StepProgress_<foot>`. |
 
+![The StepAhead panel with one rule per foot on SKM_Manny](https://pastedog.github.io/StepAhead/images/stepahead-bake-animations-editor.jpg)
+
+*One rule per foot. The grey text after each empty name shows the name that will be used.*
+
 **Bake Next Steps** runs every enabled rule. It first adds the prediction bone to the mesh(es) and merges it into the skeleton; any open editors for that skeleton close and reopen. Then it bakes every matching animation. If the bone already exists, you are asked before existing data is overwritten.
 
 Save the animations and meshes afterwards. Adding a bone changes the skeleton, so the engine marks every loaded animation of that skeleton as changed. That is expected.
@@ -97,6 +105,8 @@ Detection works on both in-place and root motion animations, on flat ground, slo
 ### Bake on import
 
 **Save to Project Settings** stores the panel's rules as the project's import rules. They live under **Project Settings → Plugins → StepAhead** and are saved in `Config/DefaultEditor.ini`. While **Bake On Import** is on, every animation that is imported or reimported for a rule's skeleton (in the rule's folder) is baked automatically.
+
+![Project Settings, Plugins, StepAhead: Bake On Import and the bake rules](https://pastedog.github.io/StepAhead/images/stepahead-project-settings.jpg)
 
 ### Animations that suit the bake
 
@@ -130,6 +140,10 @@ All three ways run the same placement code, so they behave the same.
 - The target bones must follow the feet in the animation. The UE5 mannequin's `ik_foot_*` bones do. If your skeleton's IK bones aren't animated, copy the foot bones onto them first (**Copy Bone**).
 - The node's **Alpha** blends the whole effect.
 
+![AnimGraph: Local To Component, Predictive Foot Placement, Leg IK, Component To Local](https://pastedog.github.io/StepAhead/images/predictivefootplacement-animbp-setup.jpg)
+
+*Predictive Foot Placement in component space, followed by Leg IK.*
+
 ### Control Rig unit
 
 **Predictive Foot Placement** (category StepAhead) does the same in a Control Rig. Place it in **Forward Solve** before the leg IK.
@@ -140,6 +154,10 @@ All three ways run the same placement code, so they behave the same.
   - **Valid**: the component was found and every foot was placed.
   - **Offsets**: the height and tilt added to each foot, in the order of **Feet**.
   - **Lowest Height**: the lowest height added to any foot, for your own pelvis handling.
+
+![Control Rig: Predictive Foot Placement followed by Full Body IK with the ik_foot bones as effector targets](https://pastedog.github.io/StepAhead/images/predictivefootplacement-controlrig-setup.jpg)
+
+*Predictive Foot Placement followed by Full Body IK, using the IK foot bones as the effector targets for each foot.*
 
 ### Blueprint
 
@@ -153,7 +171,11 @@ It returns a height and tilt offset. **Clamp Foot Offset**, **Weight Foot Offset
 
 ## Settings reference
 
+The tables list the default values. The screenshots show a configured character, so a few of their values differ.
+
 ### Next Step
+
+![Next Step settings: Feet, Only On Ground and Mesh](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-feet-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -162,6 +184,8 @@ It returns a height and tilt offset. **Clamp Foot Offset**, **Weight Foot Offset
 | Only On Ground | on | Only place the feet while the movement component's `IsMovingOnGround()` is true. For custom movement modes, override `IsMovingOnGround()` in your movement component. |
 
 ### Tracing
+
+![Tracing settings of the Next Step Predictor component](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-tracing-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -174,7 +198,11 @@ It returns a height and tilt offset. **Clamp Foot Offset**, **Weight Foot Offset
 | Trace LOD Override | -1 | Always use this Trace LODs entry; -1 lets the mesh LOD decide. |
 | Tracing Blend In / Out Time | 0.25 s | How fast the feet blend in and out when tracing turns on or off. |
 
+![Facing Check settings: Enabled, Max Angle, Resume Angle, Response](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-facingcheck-details.jpg)
+
 **Trace LODs.** Each entry describes how to trace at one mesh LOD; LODs past the end use the last entry.
+
+![Three Trace LODs entries: Box, Line and Disabled](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-tracing-lod-details.jpg)
 
 | Setting | Meaning |
 |---|---|
@@ -195,6 +223,8 @@ LODs 0 and 1 both use **Other Foot** as the step terrain.
 
 ### Foot Placement
 
+![Foot Placement settings of the Next Step Predictor component](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-footplacement-details.jpg)
+
 | Setting | Default | Meaning |
 |---|---|---|
 | Apply Height | on | Move the target bones to the ground height. |
@@ -205,6 +235,10 @@ LODs 0 and 1 both use **Other Foot** as the step terrain.
 | Hold Step Progress | on | Step progress never goes back down until the foot is planted, so blending animations doesn't pull the foot back mid-step. |
 
 ### Terrain and Reachability
+
+![Terrain settings: Flat Angle, Stairs Angle Tolerance, Min Stairs Height](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-terrain-details.jpg)
+
+![Reachability settings: Path Radius Scale, Min Step Width, Max Steps Look Ahead](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-reachability-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -234,6 +268,10 @@ All on the **Next Step Predictor** component (category StepAhead):
 | Is Off Ground, Is Facing Aligned, Get Facing Angle, Is Strafing | State of the last update. |
 
 ## Debugging
+
+![In-game debug view on stairs: traces, steps, terrain labels, the Foot curves graph and the trace stats panel](https://pastedog.github.io/StepAhead/images/stepahead-ingame-debug-example.jpg)
+
+*The debug view on stairs: the traces (yellow, red without a hit), the step terrain label, the Curves graph (left) and the TraceStats panel (top right).*
 
 Console commands (Debug and Development builds only):
 
