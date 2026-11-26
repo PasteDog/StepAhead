@@ -123,7 +123,7 @@ What it does each frame:
 - **Follows the movement mode.** While the movement component isn't on the ground (jumping, falling, flying), the feet blend back to the animation (**Only On Ground**).
 - **Checks the facing.** The predictions are baked relative to the character's facing, so they point the wrong way while the capsule is still turning. During that time they aren't used (**Facing Check**).
 - **Checks reachability.** A step the Character Movement can't get onto (too high, too steep, too far down) is left to the animation. The foot doesn't reach for a ledge the character won't climb (**Check Reachable**).
-- **Samples the terrain in between.** The ground between a swinging foot's plant and its next step is sampled, so the foot lifts over anything higher than where it lands (**Step Terrain**).
+- **Samples the terrain in between.** The ground between a swinging foot's plant and its next step is sampled, so the foot lifts in one smooth arc over anything above its straight path from step to step (**Step Terrain**), up to the Character Movement's **Max Step Height**: anything higher is left alone, since the character can't step over it either. Only what the animation's own swing doesn't already clear is added: its lift is measured above the line from the root to the next step, so stairs and slope loops count only their lift.
 - **Follows moving ground.** Ground found on movable components (lifts, moving platforms) moves along with them.
 
 ## Placing the feet
@@ -179,7 +179,7 @@ The tables list the default values. The screenshots show a configured character,
 
 | Setting | Default | Meaning |
 |---|---|---|
-| Feet | — | The feet to predict and place. **Foot Bone** (the baked foot) and **Target Bone** (the bone placement moves, e.g. `ik_foot_l`) are required. The prediction bone and curve names default to the bake's names (advanced). |
+| Feet | — | The feet to predict and place. **Foot Bone** (the baked foot) and **Target Bone** (the bone placement moves, e.g. `ik_foot_l`) are required. The prediction bone and curve names default to the bake's names, and **Ankle Height** (the foot bone's height above the ground when standing, for the step-over) to the reference pose (advanced). |
 | Mesh | owner's first skeletal mesh | The mesh with the prediction bones. |
 | Only On Ground | on | Only place the feet while the movement component's `IsMovingOnGround()` is true. For custom movement modes, override `IsMovingOnGround()` in your movement component. |
 
@@ -210,7 +210,7 @@ The tables list the default values. The screenshots show a configured character,
 | Trace Radius | Sphere radius or box half size. |
 | Retrace Radius | How far a prediction may move horizontally before it is traced again; 0 = every frame. |
 | Async Traces | Run the traces asynchronously and read them a frame later, instead of blocking the game thread. Ignored while the component has a tick interval. |
-| Step Terrain | How the ground between the steps is found: **None** (blend straight from step to step), **Other Foot** (the other foot's plant, if it is near the middle of the step; no extra traces), **Substeps** (**Substep Count** evenly spaced traces per new step), or **Under Foot** (one trace per frame just ahead of the foot, between **Under Foot Start** and **Under Foot End** of the step; the most exact). |
+| Step Terrain | How the ground between the steps is found: **None** (blend straight from step to step), **Other Foot** (the other foot's plant, if it is near the middle of the step; no extra traces), **Substeps** (**Substep Count** evenly spaced traces per new step), **Under Foot** (one trace per frame just ahead of the foot, between **Under Foot Start** and **Under Foot End** of the step; the most exact), or **Obstacle Search** (line traces along the rest of the step that find each obstacle and its top: one trace on clear ground, a few per obstacle, up to **Max Searches** points, each an edge it hit; **Search Clearance** is how far above the step's line it traces, so the lowest terrain it finds, and how far past an edge its top is traced). |
 | Check Reachable | Leave steps the Character Movement can't get onto to the animation. |
 | Check Path | Also sweep the capsule to each new step to find walls or railings in between (**Path Radius Scale** sets its radius). |
 
@@ -231,6 +231,8 @@ LODs 0 and 1 both use **Other Foot** as the step terrain.
 | Apply Rotation | on | Tilt the target bones to the ground slope, up to **Max Align Angle** (30°). |
 | Blend Time | 0.4 s | How long sudden changes (new ground, ground appearing or disappearing) take to blend in; 0 = instantly. |
 | Foot Offset Limits | 50 / 50 cm | How far each foot may move down or up. |
+| Step Over Apex Range | 20 / 80 % | The earliest and latest in the swing the step-over arc's peak may be; a later peak lets the foot drop more steeply onto the landing. |
+| Step Over Max Raise | 2 | The most an obstacle near lift-off or the landing raises the step-over arc, times its own height; above that the foot may clip it a little. |
 | Pelvis Bone | None | A bone (e.g. `pelvis`) moved down by the lowest foot's height, so the legs can reach. |
 | Hold Step Progress | on | Step progress never goes back down until the foot is planted, so blending animations doesn't pull the foot back mid-step. |
 
@@ -238,15 +240,15 @@ LODs 0 and 1 both use **Other Foot** as the step terrain.
 
 ![Terrain settings: Flat Angle, Stairs Angle Tolerance, Min Stairs Height](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-terrain-details.jpg)
 
-![Reachability settings: Path Radius Scale, Min Step Width, Max Steps Look Ahead](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-reachability-details.jpg)
+![Reachability settings: Path Radius Scale, Min Stair Tread Width, Max Stair Steps Look Ahead](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-reachability-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
 | Terrain Settings → Flat Angle | 3° | Ground tilted less than this counts as level. |
 | Terrain Settings → Stairs Angle Tolerance | 10° | A step steeper than the slope by more than this can be stairs. |
 | Terrain Settings → Min Stairs Height | 5 cm | The least height a step needs to count as stairs. |
-| Min Step Width | 60 cm | The narrowest tread the character can stand on, used to count how many steps fit on the way to a step; 0 = off. |
-| Max Steps Look Ahead | 2 | The most steps counted on the way to a step. |
+| Min Stair Tread Width | 60 cm | The narrowest tread the character can stand on, used to count how many steps fit on the way to a step; 0 = off. |
+| Max Stair Steps Look Ahead | 2 | The most steps counted on the way to a step. |
 
 Reachability uses the Character Movement's **Max Step Height** and **Walkable Floor Angle**. A step is reachable when it can be walked onto over known ground (the feet's plants and the sampled terrain), or when its height fits within the steps that fit on the way. Ground steeper than the walkable angle keeps its height but counts as flat, so the foot isn't tilted onto a wall.
 
@@ -265,7 +267,7 @@ All on the **Next Step Predictor** component (category StepAhead):
 | Is Next Step Reachable / Get Next Step Reachability | Whether the Character Movement can get onto a foot's next step, and why not. |
 | Get Placement Target Height / Get Lowest Placement Target Height | The height each foot blends toward, e.g. for your own pelvis or camera handling. |
 | Get Tracing Weight | How much of the placement is applied (0..1) while tracing blends out or in. |
-| Is Off Ground, Is Facing Aligned, Get Facing Angle, Is Strafing | State of the last update. |
+| Is Off Ground, Is Facing Aligned, Get Facing Angle, Is Strafing | State of the last update. While tracing is off and blended out the facing isn't checked: aligned, 0°. |
 
 ## Debugging
 
@@ -283,7 +285,7 @@ Console commands (Debug and Development builds only):
 | `a.StepAhead.Debug.Placement 1` | The target bones after placement (orange), with a ghost trail (`a.StepAhead.Debug.TrailLength`). |
 | `a.StepAhead.Debug.Root 1` | The root bone (magenta) and the component location (white). |
 | `a.StepAhead.Debug.Traces 1` | The ground traces (yellow; red without a hit) and their hits and normals (cyan). |
-| `a.StepAhead.Debug.Terrain 1` | Each foot's step: flat (silver), slope (green) or stairs (pink), with its height and angles, and the sampled terrain in between. |
+| `a.StepAhead.Debug.Terrain 1` | Each foot's step: flat (silver), slope (green) or stairs (pink), with its height and angles, the sampled terrain in between (white), and the arc a swinging foot follows over it (orange) with a marker where the foot is on it now. |
 | `a.StepAhead.Debug.Reachability 1` | The reachability checks: capsule sweeps to each step (lavender, red where blocked). |
 | `a.StepAhead.Debug.TraceStats 1` | A panel with the queries each component makes per step and per second. |
 | `a.StepAhead.Debug.Curves 1` | A graph per foot of the planted (green) and step progress (orange) curves and the placed height (`a.StepAhead.Debug.CurveSeconds` sets its length). |
@@ -297,7 +299,8 @@ Combine with `slomo 0.2` to watch single steps. StepAhead logs to the `LogStepAh
 
 - A planted foot reuses its trace, and a swinging foot is retraced only after its prediction has moved **Retrace Radius**. A walking character usually needs a few traces per foot per step.
 - Traces are asynchronous by default.
-- Characters that weren't rendered recently trace nothing (**Only When Rendered**). Distant LODs trace nothing with the default Trace LODs.
+- Characters that weren't rendered recently trace nothing (**Only When Rendered**). Distant LODs trace nothing with the default Trace LODs. Once the feet have blended back to the animation, such a character's update only checks whether to trace again.
+- Each part of the update shows in Unreal Insights (`-trace=cpu`) under `UNextStepPredictorComponent::`, `FNextStepSnapshot::UpdatePlacement` and the node names.
 - Dedicated servers trace nothing: the component doesn't tick there. Foot placement is cosmetic, so it isn't replicated.
 - The placement runs on the animation worker threads and reads the component's results through a shared snapshot, without copying them.
 
