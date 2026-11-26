@@ -13,7 +13,7 @@ Supported engine versions: Unreal Engine 5.4 and 5.8. Platform: Windows (Win64).
 1. [How it works](#how-it-works)
 2. [Quick start](#quick-start)
 3. [Baking your animations](#baking-your-animations)
-4. [The Next Step Predictor component](#the-next-step-predictor-component)
+4. [The Predictive Foot Placement component](#the-predictive-foot-placement-component)
 5. [Placing the feet: AnimBP, Control Rig or Blueprint](#placing-the-feet)
 6. [Settings reference](#settings-reference)
 7. [Runtime functions](#runtime-functions)
@@ -36,7 +36,7 @@ StepAhead has two halves.
 
 The bone is added to your skeletal mesh as a new leaf bone. Because the data lives in the animations, blending, blend spaces, montages and motion matching all blend the predictions along with the pose.
 
-**The runtime (game).** The *Next Step Predictor* component reads the baked bone every frame and traces the world under it. A *Predictive Foot Placement* node, in the AnimBP or a Control Rig, then moves each foot's IK target: from the ground it lifted off toward the ground it will land on, by its step progress. Your leg IK then solves the legs to those targets.
+**The runtime (game).** The *Predictive Foot Placement* component reads the baked bone every frame and traces the world under it. A *Predictive Foot Placement* node, in the AnimBP or a Control Rig, then moves each foot's IK target: from the ground it lifted off toward the ground it will land on, by its step progress. Your leg IK then solves the legs to those targets.
 
 ## Quick start
 
@@ -48,13 +48,13 @@ These steps use the UE5 mannequin (`SKM_Manny` / `SKM_Quinn`, feet `foot_l` / `f
    - **Folder**: the folder that holds your locomotion animations.
 
    Click **Bake Next Steps**, then save the changed animations and meshes.
-2. **Add the component.** Add a **Next Step Predictor** component to your character Blueprint. Under **Feet**, add two entries:
+2. **Add the component.** Add a **Predictive Foot Placement** component to your character Blueprint. Under **Feet**, add two entries:
    - **Foot Bone** `foot_l`, **Target Bone** `ik_foot_l`.
    - **Foot Bone** `foot_r`, **Target Bone** `ik_foot_r`.
 
    Optionally set **Pelvis Bone** to `pelvis`.
 
-   ![The Add Component menu with Next Step Predictor under StepAhead](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-add.jpg)
+   ![The Add Component menu with Predictive Foot Placement under StepAhead](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-add.jpg)
 
    ![The Feet list with foot_l / ik_foot_l and foot_r / ik_foot_r](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-feet-details.jpg)
 3. **Place the feet.** In the AnimBP's AnimGraph, add **Predictive Foot Placement** after your locomotion pose. Follow it with your leg IK (for example **Two Bone IK** or **Leg IK**) that pulls each foot to its `ik_foot_*` bone.
@@ -113,7 +113,7 @@ Detection works on both in-place and root motion animations, on flat ground, slo
 - Locomotion with clear foot plants: walks, jogs, runs, starts, stops, pivots and strafes.
 - Each foot needs at least one plant in the clip; contacts shorter than **Min Contact Frames** are ignored.
 
-## The Next Step Predictor component
+## The Predictive Foot Placement component
 
 Add one per character. It finds the owner's first skeletal mesh (or the one set in **Mesh**). It ticks once per frame after the mesh has animated, and is the only place the ground is traced. The placement nodes read its results.
 
@@ -185,7 +185,7 @@ The tables list the default values. The screenshots show a configured character,
 
 ### Tracing
 
-![Tracing settings of the Next Step Predictor component](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-tracing-details.jpg)
+![Tracing settings of the Predictive Foot Placement component](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-tracing-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -223,7 +223,7 @@ LODs 0 and 1 both use **Other Foot** as the step terrain.
 
 ### Foot Placement
 
-![Foot Placement settings of the Next Step Predictor component](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-footplacement-details.jpg)
+![Foot Placement settings of the Predictive Foot Placement component](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-footplacement-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -254,7 +254,7 @@ Reachability uses the Character Movement's **Max Step Height** and **Walkable Fl
 
 ## Runtime functions
 
-All on the **Next Step Predictor** component (category StepAhead):
+All on the **Predictive Foot Placement** component (category StepAhead):
 
 | Function | Use |
 |---|---|
@@ -300,7 +300,7 @@ Combine with `slomo 0.2` to watch single steps. StepAhead logs to the `LogStepAh
 - A planted foot reuses its trace, and a swinging foot is retraced only after its prediction has moved **Retrace Radius**. A walking character usually needs a few traces per foot per step.
 - Traces are asynchronous by default.
 - Characters that weren't rendered recently trace nothing (**Only When Rendered**). Distant LODs trace nothing with the default Trace LODs. Once the feet have blended back to the animation, such a character's update only checks whether to trace again.
-- Each part of the update shows in Unreal Insights (`-trace=cpu`) under `UNextStepPredictorComponent::`, `FNextStepSnapshot::UpdatePlacement` and the node names.
+- Each part of the update shows in Unreal Insights (`-trace=cpu`) under `UPredictiveFootPlacementComponent::`, `FNextStepSnapshot::UpdatePlacement` and the node names.
 - Dedicated servers trace nothing: the component doesn't tick there. Foot placement is cosmetic, so it isn't replicated.
 - The placement runs on the animation worker threads and reads the component's results through a shared snapshot, without copying them.
 
