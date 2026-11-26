@@ -287,8 +287,8 @@ Console commands (Debug and Development builds only):
 | `a.StepAhead.Debug.Traces 1` | The ground traces (yellow; red without a hit) and their hits and normals (cyan). |
 | `a.StepAhead.Debug.Terrain 1` | Each foot's step: flat (silver), slope (green) or stairs (pink), with its height and angles, the sampled terrain in between (white), and the arc a swinging foot follows over it (orange) with a marker where the foot is on it now. |
 | `a.StepAhead.Debug.Reachability 1` | The reachability checks: capsule sweeps to each step (lavender, red where blocked). |
-| `a.StepAhead.Debug.TraceStats 1` | A panel with the queries each component makes per step and per second. |
-| `a.StepAhead.Debug.Curves 1` | A graph per foot of the planted (green) and step progress (orange) curves and the placed height (`a.StepAhead.Debug.CurveSeconds` sets its length). |
+| `a.StepAhead.Debug.TraceStats 1` | One panel for all characters: their queries per second and per step together, and how many characters trace in which way (LOD and shape, or why not). |
+| `a.StepAhead.Debug.Curves 1` | For one character, a graph per foot of the planted (green) and step progress (orange) curves and the placed height (`a.StepAhead.Debug.CurveSeconds` sets its length). It shows the character you view; `a.StepAhead.Debug.CurvesNext` / `CurvesPrev` switch to another. |
 | `a.StepAhead.Debug.LogJumps <cm>` | Logs every placement update whose height jumps by more than this, with its inputs. |
 | `a.StepAhead.Debug.TraceLODOverride <n>` | Force a Trace LODs entry on every character (-1 = off). |
 | `a.StepAhead.Debug.HoldStepProgress <0/1>` | Override Hold Step Progress on every character. |
