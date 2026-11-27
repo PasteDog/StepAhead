@@ -54,16 +54,16 @@ Setting up a character takes three steps, and the first runs once per skeleton, 
    - **Foot Bone Name**: `foot_l` in one rule, `foot_r` in the other.
    - **Folder**: the folder that holds your locomotion animations.
 
-   Click **Bake Next Steps**, then save the changed animations and meshes.
+   Make sure your looping cycles have **Loop** on in their Asset Details (see [Animations that suit the bake](#animations-that-suit-the-bake)). Click **Bake Next Steps**, then save the changed animations and meshes.
 2. **Add the component.** Add a **Predictive Foot Placement** component to your character Blueprint. Under **Feet**, add two entries:
    - **Foot Bone** `foot_l`, **Target Bone** `ik_foot_l`.
    - **Foot Bone** `foot_r`, **Target Bone** `ik_foot_r`.
 
    Optionally set **Pelvis Bone** to `pelvis`.
 
-   ![The Add Component menu with Predictive Foot Placement under StepAhead](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-add.jpg)
+   ![The Add Component menu with Predictive Foot Placement under StepAhead](https://pastedog.github.io/StepAhead/images/predictivefootplacement-component-add.jpg)
 
-   ![The Feet list with foot_l / ik_foot_l and foot_r / ik_foot_r](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-feet-details.jpg)
+   ![The Feet list with foot_l / ik_foot_l and foot_r / ik_foot_r](https://pastedog.github.io/StepAhead/images/predictivefootplacement-component-feet-details.jpg)
 3. **Place the feet.** In the AnimBP's AnimGraph, add **Predictive Foot Placement** after your locomotion pose. Follow it with your leg IK (for example **Two Bone IK** or **Leg IK**) that pulls each foot to its `ik_foot_*` bone.
 4. **Test.** Play, and walk up stairs and slopes. Type `a.StepAhead.Debug.All 1` in the console to see what is traced.
 
@@ -107,7 +107,7 @@ Save the animations and meshes afterwards. Adding a bone changes the skeleton, s
 | Min Contact Frames | 2 | Contacts shorter than this are ignored. |
 | Step Progress Basis | Distance | What step progress rises with: the foot's horizontal travel (Distance), or time. |
 
-Detection works on both in-place and root motion animations, on flat ground, slopes and stairs. It also handles loops: a plant that wraps around the end of the clip counts as one plant. In clips where the foot never lands (jumps, falls), the bone follows the foot and both curves stay at 0.
+Detection works on both in-place and root motion animations, on flat ground, slopes and stairs. It also handles loops: a plant that wraps around the end of the clip counts as one plant. Which clips loop is read from each animation's **Loop** setting (see [Animations that suit the bake](#animations-that-suit-the-bake)). In clips where the foot never lands (jumps, falls), the bone follows the foot and both curves stay at 0.
 
 ### Bake on import
 
@@ -119,6 +119,11 @@ Detection works on both in-place and root motion animations, on flat ground, slo
 
 - Locomotion with clear foot plants: walks, jogs, runs, starts, stops, pivots and strafes.
 - Each foot needs at least one plant in the clip; contacts shorter than **Min Contact Frames** are ignored.
+- **Looping animations need Loop turned on.** The bake reads the animation's **Loop** setting (Asset Details → Animation) to know that the clip continues from its start. Without it, the clip is baked as if it ends: the step across the loop point gets no next plant, so the prediction is wrong there. Turn **Loop** on for every looping cycle (walk, jog, run, strafe loops) before baking, and bake again after changing it.
+
+![Asset Details of a run cycle with Loop turned on](https://pastedog.github.io/StepAhead/images/animation-asset-setup.jpg)
+
+*A run cycle with **Loop** on. The timeline shows the baked curves: planted (rectangles) and step progress (ramps) per foot.*
 
 ## The Predictive Foot Placement component
 
@@ -182,7 +187,7 @@ The tables list the default values. The screenshots show a configured character,
 
 ### Next Step
 
-![Next Step settings: Feet, Only On Ground and Mesh](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-feet-details.jpg)
+![Next Step settings: Feet, Only On Ground and Mesh](https://pastedog.github.io/StepAhead/images/predictivefootplacement-component-feet-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -192,7 +197,7 @@ The tables list the default values. The screenshots show a configured character,
 
 ### Tracing
 
-![Tracing settings of the Predictive Foot Placement component](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-tracing-details.jpg)
+![Tracing settings of the Predictive Foot Placement component](https://pastedog.github.io/StepAhead/images/predictivefootplacement-component-tracing-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -205,11 +210,11 @@ The tables list the default values. The screenshots show a configured character,
 | Trace LOD Override | -1 | Always use this Trace LODs entry; -1 lets the mesh LOD decide. |
 | Tracing Blend In / Out Time | 0.25 s | How fast the feet blend in and out when tracing turns on or off. |
 
-![Facing Check settings: Enabled, Max Angle, Resume Angle, Response](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-facingcheck-details.jpg)
+![Facing Check settings: Enabled, Max Angle, Resume Angle, Response](https://pastedog.github.io/StepAhead/images/predictivefootplacement-component-facingcheck-details.jpg)
 
 **Trace LODs.** Each entry describes how to trace at one mesh LOD; LODs past the end use the last entry.
 
-![Three Trace LODs entries: Box, Line and Disabled](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-tracing-lod-details.jpg)
+![Three Trace LODs entries: Box, Line and Disabled](https://pastedog.github.io/StepAhead/images/predictivefootplacement-component-tracing-lod-details.jpg)
 
 | Setting | Meaning |
 |---|---|
@@ -230,7 +235,7 @@ LOD 0 uses **Obstacle Search** as the step terrain, LOD 1 **Other Foot**.
 
 ### Foot Placement
 
-![Foot Placement settings of the Predictive Foot Placement component](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-footplacement-details.jpg)
+![Foot Placement settings of the Predictive Foot Placement component](https://pastedog.github.io/StepAhead/images/predictivefootplacement-component-footplacement-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -245,9 +250,9 @@ LOD 0 uses **Obstacle Search** as the step terrain, LOD 1 **Other Foot**.
 
 ### Terrain and Reachability
 
-![Terrain settings: Flat Angle, Stairs Angle Tolerance, Min Stairs Height](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-terrain-details.jpg)
+![Terrain settings: Flat Angle, Stairs Angle Tolerance, Min Stairs Height](https://pastedog.github.io/StepAhead/images/predictivefootplacement-component-terrain-details.jpg)
 
-![Reachability settings: Path Radius Scale, Min Stair Tread Width, Max Stair Steps Look Ahead](https://pastedog.github.io/StepAhead/images/nextsteppredictor-component-reachability-details.jpg)
+![Reachability settings: Path Radius Scale, Min Stair Tread Width, Max Stair Steps Look Ahead](https://pastedog.github.io/StepAhead/images/predictivefootplacement-component-reachability-details.jpg)
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -278,9 +283,9 @@ All on the **Predictive Foot Placement** component (category StepAhead):
 
 ## Debugging
 
-![In-game debug view on stairs: traces, steps, terrain labels, the Foot curves graph and the trace stats panel](https://pastedog.github.io/StepAhead/images/stepahead-ingame-debug-example.jpg)
+![In-game debug view of seven characters walking down slopes: traces, steps, terrain labels, the Foot curves graph and the shared trace stats panel](https://pastedog.github.io/StepAhead/images/stepahead-ingame-debug-example.jpg)
 
-*The debug view on stairs: the traces (yellow, red without a hit), the step terrain label, the Curves graph (left) and the TraceStats panel (top right).*
+*Seven characters walking down slopes: the traces (yellow, red without a hit), each step's terrain label, the Curves graph for one character (left) and the TraceStats panel for all of them (top right): 2.5 ground traces per step.*
 
 Console commands (Debug and Development builds only):
 
@@ -329,6 +334,8 @@ A walking character usually needs a few traces per foot per step. To see the num
 - Check that the playing animations were baked (their curves list `Planted_*` and `StepProgress_*`).
 - Check that the names in **Feet** match.
 - Turn on `a.StepAhead.Debug.NextStep`: no markers means no prediction data.
+
+**A foot jumps or lands in the wrong place once per cycle.** The looping animation was probably baked with **Loop** off. Turn it on in the animation's Asset Details and bake again (see [Animations that suit the bake](#animations-that-suit-the-bake)).
 
 **The feet move, but the legs don't follow.** Place the node before your leg IK, and make sure the IK uses the **Target Bones** as its targets.
 
