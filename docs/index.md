@@ -8,19 +8,26 @@ StepAhead places a character's feet on the real ground *before* they land. Most 
 
 Supported engine versions: Unreal Engine 5.4 and 5.8. Platform: Windows (Win64).
 
+## At a glance
+
+- **Set up in three steps.** Bake your animations with one click, add one component, add one node before your leg IK. No curves to author, no markers to place, no new IK rig: your existing leg IK keeps solving the legs. The defaults are made for typical locomotion, so the settings are there for tuning, not for getting started. See [Quick start](#quick-start).
+- **Few traces.** The ground is traced where each foot will land, once, and that trace is reused until the predicted spot moves. A planted foot is usually traced once per step, and a swinging foot a few times, instead of every foot every frame. Off-screen and distant characters trace nothing. See [Few traces](#few-traces).
+- **Blends with everything.** The predictions are baked into the animations, so blend spaces, montages, layered blends and motion matching blend them along with the pose.
+
 ## Contents
 
-1. [How it works](#how-it-works)
-2. [Quick start](#quick-start)
-3. [Baking your animations](#baking-your-animations)
-4. [The Predictive Foot Placement component](#the-predictive-foot-placement-component)
-5. [Placing the feet: AnimBP, Control Rig or Blueprint](#placing-the-feet)
-6. [Settings reference](#settings-reference)
-7. [Runtime functions](#runtime-functions)
-8. [Debugging](#debugging)
-9. [Performance](#performance)
-10. [Troubleshooting](#troubleshooting)
-11. [Limitations](#limitations)
+1. [At a glance](#at-a-glance)
+2. [How it works](#how-it-works)
+3. [Quick start](#quick-start)
+4. [Baking your animations](#baking-your-animations)
+5. [The Predictive Foot Placement component](#the-predictive-foot-placement-component)
+6. [Placing the feet: AnimBP, Control Rig or Blueprint](#placing-the-feet)
+7. [Settings reference](#settings-reference)
+8. [Runtime functions](#runtime-functions)
+9. [Debugging](#debugging)
+10. [Performance](#performance) ([Few traces](#few-traces))
+11. [Troubleshooting](#troubleshooting)
+12. [Limitations](#limitations)
 
 ## How it works
 
@@ -40,7 +47,7 @@ The bone is added to your skeletal mesh as a new leaf bone. Because the data liv
 
 ## Quick start
 
-These steps use the UE5 mannequin (`SKM_Manny` / `SKM_Quinn`, feet `foot_l` / `foot_r`, IK targets `ik_foot_l` / `ik_foot_r`). Use your own names if they differ.
+Setting up a character takes three steps, and the first runs once per skeleton, not per character. These steps use the UE5 mannequin (`SKM_Manny` / `SKM_Quinn`, feet `foot_l` / `foot_r`, IK targets `ik_foot_l` / `ik_foot_r`). Use your own names if they differ.
 
 1. **Bake.** Open **Tools → StepAhead**. Add two rules, one per foot:
    - **Skeletal Mesh**: `SKM_Manny`.
@@ -60,7 +67,7 @@ These steps use the UE5 mannequin (`SKM_Manny` / `SKM_Quinn`, feet `foot_l` / `f
 3. **Place the feet.** In the AnimBP's AnimGraph, add **Predictive Foot Placement** after your locomotion pose. Follow it with your leg IK (for example **Two Bone IK** or **Leg IK**) that pulls each foot to its `ik_foot_*` bone.
 4. **Test.** Play, and walk up stairs and slopes. Type `a.StepAhead.Debug.All 1` in the console to see what is traced.
 
-To bake new animations automatically from then on, click **Save to Project Settings** in the panel. See [Bake on import](#bake-on-import).
+That's the whole setup. Every other setting has a default that works for typical locomotion. More characters on the same skeleton only need steps 2 and 3, and new animations bake automatically once you click **Save to Project Settings** in the panel (see [Bake on import](#bake-on-import)).
 
 ## Baking your animations
 
@@ -219,7 +226,7 @@ The defaults:
 - **LOD 1:** a line, retraced every 30 cm.
 - **LOD 2 and beyond:** no tracing.
 
-LODs 0 and 1 both use **Other Foot** as the step terrain.
+LOD 0 uses **Obstacle Search** as the step terrain, LOD 1 **Other Foot**.
 
 ### Foot Placement
 
@@ -297,9 +304,20 @@ Combine with `slomo 0.2` to watch single steps. StepAhead logs to the `LogStepAh
 
 ## Performance
 
-- A planted foot reuses its trace, and a swinging foot is retraced only after its prediction has moved **Retrace Radius**. A walking character usually needs a few traces per foot per step.
+### Few traces
+
+Reactive foot IK has to trace under every foot every frame, because it only learns about the ground once the foot is above it. StepAhead knows where each foot will land, so it traces that spot and keeps the result:
+
+- **A trace is reused until its point moves.** Each foot's trace is kept until the traced point moves more than **Retrace Radius** sideways (15 cm at LOD 0, 30 cm at LOD 1); a miss is kept too. The predicted landing spot stays where it is in the world while the foot swings toward it, so a swinging foot is retraced only when the animation changes its mind (a turn, a blend into another clip). A planted foot doesn't move, so it is usually traced once.
+- **The terrain in between is cheap.** The default at LOD 0, **Obstacle Search**, runs once per new step: one trace on clear ground, a few per obstacle. LOD 1's **Other Foot** uses the other foot's plant and traces nothing.
+- **Reachability queries run once per new trace**, not every frame. The check that runs every frame works from ground already known (the plants and the sampled terrain) and traces nothing.
+- **Characters you can't see trace nothing.** Characters that weren't rendered recently (**Only When Rendered**) and distant mesh LODs (the default Trace LODs) don't trace. Once their feet have blended back to the animation, their update only checks whether to trace again.
+
+A walking character usually needs a few traces per foot per step. To see the numbers in your own level, turn on `a.StepAhead.Debug.TraceStats 1`: it shows the queries per second and per step of all characters together, and how many characters trace at which LOD.
+
+### Threads and profiling
+
 - Traces are asynchronous by default.
-- Characters that weren't rendered recently trace nothing (**Only When Rendered**). Distant LODs trace nothing with the default Trace LODs. Once the feet have blended back to the animation, such a character's update only checks whether to trace again.
 - Each part of the update shows in Unreal Insights (`-trace=cpu`) under `UPredictiveFootPlacementComponent::`, `FNextStepSnapshot::UpdatePlacement` and the node names.
 - Dedicated servers trace nothing: the component doesn't tick there. Foot placement is cosmetic, so it isn't replicated.
 - The placement runs on the animation worker threads and reads the component's results through a shared snapshot, without copying them.
